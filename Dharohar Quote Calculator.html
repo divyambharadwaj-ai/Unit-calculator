@@ -1,0 +1,434 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dharohar Quote Calculator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: single working column on phone; on desktop inputs rail left, quote right. Stone neutrals, maroon ink, brass for money highlights. */
+:root{
+  --bg:#f3f2ef; --surface:#ffffff; --sunk:#eae8e3; --line:#dcd8d0;
+  --fg:#22201d; --muted:#6c675f;
+  --accent:#7a1f2b; --accent-ink:#ffffff; --accent-soft:#f4e6e8;
+  --brass:#9a6b12; --brass-soft:#f6eedb;
+  --ok:#2e7d32; --ok-soft:#e3f1e4; --bad:#b00020; --bad-soft:#fbe3e6; --warn:#8a6d00; --warn-soft:#fff3cd;
+  --wa-green:#1f8f4e; --wa-bg:#e9e1d6; --wa-bubble:#d9fdd3; --wa-fg:#111b21;
+  --display:"Marcellus", "Times New Roman", serif;
+  --body:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#171615; --surface:#211f1d; --sunk:#2a2826; --line:#3a3734;
+  --fg:#ece9e4; --muted:#a39e96;
+  --accent:#d9707e; --accent-ink:#1a0d0f; --accent-soft:#3a2226;
+  --brass:#d9a94a; --brass-soft:#352b18;
+  --ok:#7cc47f; --ok-soft:#1f3321; --wa-bg:#0b141a; --wa-bubble:#005c4b; --wa-fg:#e9edef; --bad:#ff7a8a; --bad-soft:#3d1d22; --warn:#e3c45a; --warn-soft:#3a3218;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171615; --surface:#211f1d; --sunk:#2a2826; --line:#3a3734;
+  --fg:#ece9e4; --muted:#a39e96;
+  --accent:#d9707e; --accent-ink:#1a0d0f; --accent-soft:#3a2226;
+  --brass:#d9a94a; --brass-soft:#352b18;
+  --ok:#7cc47f; --ok-soft:#1f3321; --wa-bg:#0b141a; --wa-bubble:#005c4b; --wa-fg:#e9edef; --bad:#ff7a8a; --bad-soft:#3d1d22; --warn:#e3c45a; --warn-soft:#3a3218;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:2px solid var(--accent);padding-bottom:12px}
+h1{font-family:var(--display);font-weight:400;font-size:2.1rem;letter-spacing:.06em;margin:0;color:var(--accent);line-height:1}
+.sub{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);font-weight:700;margin-top:6px}
+.tabs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:10px}
+.tabs button{border:0;background:transparent;color:var(--muted);font:600 .85rem var(--body);padding:8px 14px;border-radius:7px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;gap:14px;min-width:0}
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+@media (max-width:860px){.rail{position:static}}
+label{display:grid;gap:5px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+input,select{font:500 1rem var(--body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 11px;width:100%;min-width:0}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.plans{display:grid;gap:6px}
+.pair{display:grid;gap:14px}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:480px){.fields{grid-template-columns:minmax(0,1fr)}}
+.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.btn{display:block;text-align:center;text-decoration:none}
+.wa-btn{background:var(--wa-green);color:#fff}
+@media (max-width:860px){
+  .pair{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:10px}
+  .plans{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .plan{flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2px;padding:10px 4px;font-size:.85rem}
+  .panel{padding:14px}
+  h1{font-size:1.7rem}
+  .wrap{gap:14px}
+}
+.plan{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:10px 12px;cursor:pointer;font:600 .92rem var(--body);color:var(--fg);text-align:left}
+.plan small{font-weight:500;color:var(--muted);font-size:.78rem}
+.plan[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.unitmeta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.85rem;color:var(--muted)}
+.pill{display:inline-block;font:700 .7rem var(--body);letter-spacing:.08em;padding:3px 8px;border-radius:99px}
+.pill.AVAILABLE{background:var(--ok-soft);color:var(--ok)}.pill.SOLD{background:var(--bad-soft);color:var(--bad)}.pill.HOLD{background:var(--warn-soft);color:var(--warn)}
+.alert{background:var(--bad-soft);color:var(--bad);border-radius:8px;padding:10px 12px;font-weight:600;font-size:.88rem}
+details summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--accent)}
+.rates{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.rates label{font-size:.66rem}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);font:700 .9rem var(--body);padding:11px 14px;border-radius:9px;cursor:pointer;width:100%}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.toast{font-size:.8rem;color:var(--ok);min-height:1em}
+.hero{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+@media (max-width:560px){.hero{grid-template-columns:1fr}}
+.hero div{background:var(--surface);padding:14px 16px;display:grid;gap:2px}
+.k{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.v{font-size:1.45rem;font-weight:700;font-variant-numeric:tabular-nums}
+.hero .total .v{color:var(--accent)} .hero .eff .v{color:var(--brass)}
+.n{font-size:.78rem;color:var(--muted)}
+h2{font-family:var(--display);font-weight:400;font-size:1.25rem;margin:0;color:var(--fg);letter-spacing:.02em}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.9rem}
+th{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:700;padding:8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.r,th.r{text-align:right;white-space:nowrap}
+tr.sub td{font-weight:700;background:var(--sunk)}
+tr.grand td{font-weight:700;background:var(--accent);color:var(--accent-ink);border:0}
+tr.addl td:first-child{color:var(--brass)}
+.idx{color:var(--muted);width:2em}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:700px){.cmp{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:8px;background:var(--surface);cursor:pointer;text-align:left;font:inherit;color:inherit}
+.card.sel{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.card h3{margin:0;font-size:1rem;display:flex;justify-content:space-between;gap:6px;align-items:center}
+.best{font:700 .62rem var(--body);letter-spacing:.08em;background:var(--ok-soft);color:var(--ok);padding:3px 7px;border-radius:99px;white-space:nowrap}
+.row{display:flex;justify-content:space-between;gap:8px;font-size:.86rem;font-variant-numeric:tabular-nums}
+.row span:first-child{color:var(--muted)}
+.row.big{font-weight:700;font-size:.95rem;border-top:1px solid var(--line);padding-top:8px}
+.bar{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.legend{display:flex;gap:12px;font-size:.72rem;color:var(--muted);flex-wrap:wrap}
+.legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.inv-sum{display:flex;flex-wrap:wrap;gap:10px}
+.inv-sum div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:120px}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.filters select,.filters input{width:auto;flex:1 1 140px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
+.u{border:1px solid var(--line);border-radius:8px;padding:8px 4px;text-align:center;font:600 .82rem var(--body);cursor:pointer;background:var(--surface);color:var(--fg)}
+.u.AVAILABLE{border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
+.u.SOLD{background:var(--bad-soft);color:var(--bad);cursor:not-allowed}
+.u.HOLD{background:var(--warn-soft);color:var(--warn)}
+.u small{display:block;font-weight:500;font-size:.65rem;color:var(--muted)}
+.notes{font-size:.78rem;color:var(--muted);margin:0;padding-left:1.1em;display:grid;gap:3px}
+.foot{font-size:.75rem;color:var(--muted)}
+.wa{background:var(--wa-bg);border-radius:10px;padding:14px;overflow-x:auto}
+.bubble{background:var(--wa-bubble);color:var(--wa-fg);border-radius:8px 0 8px 8px;padding:10px 12px;max-width:360px;margin-left:auto;white-space:pre-wrap;font:14.5px/1.42 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 1px 1px rgba(0,0,0,.12);overflow-wrap:anywhere}
+@media (prefers-reduced-motion:no-preference){.card,.plan,.u{transition:border-color .15s,background .15s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div><h1>DHAROHAR</h1><div class="sub">Cost sheet &amp; payment plan</div></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-quote" aria-selected="true" data-view="quote">Quote</button>
+      <button role="tab" id="tab-inv" aria-selected="false" data-view="inventory">Inventory</button>
+    </div>
+  </header>
+
+  <section id="view-quote" class="layout">
+    <aside class="panel rail">
+      <div class="pair">
+        <label for="unit">Unit no.
+          <select id="unit"></select>
+        </label>
+        <label for="tokenDate">Token date
+          <input type="date" id="tokenDate">
+        </label>
+      </div>
+      <div class="unitmeta" id="unitmeta"></div>
+      <div class="alert" id="soldAlert" hidden></div>
+      <div class="plans" id="plans" role="group" aria-label="Payment plan"></div>
+      <details>
+        <summary>Rates &amp; plan settings</summary>
+        <div class="rates" id="rates"></div>
+        <button class="btn ghost" id="resetRates" type="button" style="margin-top:10px">Reset to standard rates</button>
+      </details>
+    </aside>
+
+    <div style="display:grid;gap:20px;min-width:0">
+      <div class="hero">
+        <div class="total"><span class="k">Total cost</span><span class="v" id="hTotal"></span><span class="n" id="hRate"></span></div>
+        <div><span class="k">Due within booking period</span><span class="v" id="hUp"></span><span class="n" id="hUpN"></span></div>
+        <div class="eff"><span class="k">Effective cost after rental</span><span class="v" id="hEff"></span><span class="n" id="hEffN"></span></div>
+      </div>
+
+      <div class="panel">
+        <h2>Send quote on WhatsApp</h2>
+        <div class="fields">
+          <label for="customer">Customer name
+            <input type="text" id="customer" placeholder="e.g. Mr. Rajesh Sharma" autocomplete="off">
+          </label>
+          <label for="custPhone">Customer mobile
+            <input type="tel" id="custPhone" inputmode="tel" placeholder="10-digit number (optional)" autocomplete="off">
+          </label>
+          <label for="agent">Your name
+            <input type="text" id="agent" placeholder="For the sign-off">
+          </label>
+          <label for="agentPhone">Your mobile
+            <input type="tel" id="agentPhone" inputmode="tel" placeholder="For the sign-off">
+          </label>
+        </div>
+        <div class="actions">
+          <a class="btn wa-btn" id="sendWA" href="https://wa.me/" target="_blank" rel="noopener">Send on WhatsApp</a>
+          <button class="btn ghost" id="copy" type="button">Copy message</button>
+        </div>
+        <div class="toast" id="toast" role="status"></div>
+        <div class="wa"><div class="bubble" id="waPreview"></div></div>
+      </div>
+
+      <div class="panel">
+        <h2>Compare plans for this unit</h2>
+        <div class="cmp" id="cmp"></div>
+        <div class="legend"><span><b style="background:var(--accent)"></b>Paid in booking period</span><span><b style="background:var(--brass)"></b>Paid later</span></div>
+      </div>
+
+      <div class="panel">
+        <h2>Price breakup</h2>
+        <div class="tbl"><table id="price"></table></div>
+      </div>
+
+      <div class="panel">
+        <h2 id="schedTitle">Payment schedule</h2>
+        <div class="tbl"><table id="sched"></table></div>
+      </div>
+
+      <div class="panel">
+        <h2>Assured rental return</h2>
+        <div class="tbl"><table id="rent"></table></div>
+        <ol class="notes">
+          <li>All amounts in Indian Rupees. Prices and charges are subject to change without notice.</li>
+          <li>Rental return is paid monthly at the plan rate on the eligible amount paid, for the rental period shown.</li>
+          <li>Rental value (NPV) is for comparison only and is not a discount on the agreement value.</li>
+          <li>Due dates are counted from the token date.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-inventory" hidden style="display:grid;gap:16px">
+    <div class="inv-sum" id="invSum"></div>
+    <div class="filters">
+      <select id="fType" aria-label="Unit type"><option value="">All types</option><option>STUDIO</option><option>SHOP</option></select>
+      <select id="fStatus" aria-label="Status"><option value="">All statuses</option><option>AVAILABLE</option><option>HOLD</option><option>SOLD</option></select>
+      <input id="fSearch" type="search" placeholder="Search unit no.">
+    </div>
+    <div class="grid" id="invGrid"></div>
+    <p class="foot">Tap an available unit to open its quote. Inventory as on 25 Oct 2026 — ask Claude to update statuses when units sell.</p>
+  </section>
+</div>
+
+<script>
+const INV = (()=>{const a=[];
+  for(let i=1;i<=108;i++)a.push({u:'SA-'+String(i).padStart(2,'0'),t:'STUDIO',a:100,s:i===1?'SOLD':'AVAILABLE',p:[0,0,0,0]});
+  for(let i=11;i<=77;i++)a.push({u:'SH-'+i,t:'SHOP',a:100,s:'AVAILABLE',p:[0,0,0,0]});
+  return a})();
+const PLC_NAMES=['Corner','24m road','Park / utility','9m road'];
+const DEFAULTS={bsp:34999,edc:750,idc:750,elec:750,minfra:750,gst:18,token:200000,bookDays:14,
+  s50book:50,s50rent:10, a75book:75,a75mid:15,a75midDays:180,a75final:10,a75finalDays:360,a75rent:11,
+  p90book:90,p90final:10,p90finalDays:540,p90rent:14, rentMonths:18,npv:70};
+const RATE_FIELDS=[['bsp','Basic price ₹/sq yd'],['edc','EDC ₹/sq yd'],['idc','IDC ₹/sq yd'],['elec','Electrification ₹/sq yd'],['minfra','Maint. infra ₹/sq yd'],['gst','GST %'],['token','Token ₹'],['bookDays','Booking due (days)'],
+  ['s50rent','Smart 50 rental %'],['a75rent','Advantage 75 rental %'],['p90rent','Prime 90 rental %'],['rentMonths','Rental months'],['npv','Rental value factor %'],
+  ['a75midDays','Adv 75 2nd pay (days)'],['a75finalDays','Adv 75 final (days)'],['p90finalDays','Prime 90 final (days)']];
+const PLANS=[{id:'s50',name:'Smart 50',split:'50:50'},{id:'a75',name:'Advantage 75',split:'75:25'},{id:'p90',name:'Prime 90',split:'90:10'}];
+
+function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+let R=Object.assign({},DEFAULTS,load('dh-rates-v2',{}));
+const today=new Date();today.setHours(0,0,0,0);
+const st={unit:'SA-08',plan:'s50',date:iso(today),customer:'',cphone:'',agent:load('dh-agent',''),phone:load('dh-phone','')};
+
+function iso(d){const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())}
+function parse(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function addMonths(d,n){const x=new Date(d.getFullYear(),d.getMonth()+n,1);const last=new Date(x.getFullYear(),x.getMonth()+1,0).getDate();x.setDate(Math.min(d.getDate(),last));return x}
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const fd=d=>d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-');
+const pct=n=>(Math.round(n*1000)/10)+'%';
+const lakh=n=>n>=1e7?(n/1e7).toFixed(2)+' Cr':n>=1e5?(n/1e5).toFixed(2)+' L':inr(n);
+
+function cost(unit){
+  const a=unit.a, plcR=unit.p.reduce((s,x)=>s+x,0);
+  const bsp=(R.bsp+plcR)*a;
+  const add=[['EDC',R.edc],['IDC',R.idc],['Electrification charges',R.elec],['Maintenance infrastructure charges',R.minfra]];
+  const addBase=add.reduce((s,x)=>s+x[1],0)*a, gst=addBase*R.gst/100, addl=addBase+gst;
+  return {a,bsp,add,addBase,gst,addl,total:bsp+addl,plcR};
+}
+function schedule(planId,c,t0){
+  const book=addDays(t0,R.bookDays), rows=[], T=R.token;
+  const rows_=(l,d,amt)=>rows.push({l,d,amt});
+  rows_('Token amount',t0,T);
+  if(planId==='s50'){
+    rows_(`Booking — ${R.s50book}% of BSP less token (within ${R.bookDays} days)`,book,c.bsp*R.s50book/100-T);
+    const inst=c.bsp*(1-R.s50book/100)/12;
+    for(let k=1;k<=12;k++){const ex=(k===6||k===12);rows_(`Installment ${k}${ex?' + 50% additional charges':''}`,addMonths(book,k),inst+(ex?c.addl/2:0))}
+  }else if(planId==='a75'){
+    rows_(`Booking — ${R.a75book}% of BSP less token (within ${R.bookDays} days)`,book,c.bsp*R.a75book/100-T);
+    rows_(`${R.a75mid}% of BSP — within ${R.a75midDays} days`,addDays(t0,R.a75midDays),c.bsp*R.a75mid/100);
+    rows_(`${R.a75final}% of BSP + additional charges — within ${R.a75finalDays} days`,addDays(t0,R.a75finalDays),c.bsp*R.a75final/100+c.addl);
+  }else{
+    rows_(`Booking — ${R.p90book}% of BSP less token (within ${R.bookDays} days)`,book,c.bsp*R.p90book/100-T);
+    rows_(`${R.p90final}% of BSP + additional charges — within ${R.p90finalDays} days`,addDays(t0,R.p90finalDays),c.bsp*R.p90final/100+c.addl);
+  }
+  let cum=0;rows.forEach(r=>{cum+=r.amt;r.cum=cum});
+  // rental
+  const M=R.rentMonths, monthly=[];
+  for(let m=1;m<=M;m++){
+    let base;
+    if(planId==='s50')base=Math.min(c.bsp,c.bsp*R.s50book/100+(m-1)*c.bsp*(1-R.s50book/100)/12);
+    else base=c.bsp*(planId==='a75'?R.a75book:R.p90book)/100;
+    monthly.push(base*(R[planId+'rent'])/100/12);
+  }
+  const totalRent=monthly.reduce((s,x)=>s+x,0), npv=totalRent*R.npv/100;
+  const up=rows[0].amt+rows[1].amt;
+  return {rows,monthly,totalRent,npv,eff:c.total-npv,up,last:rows[rows.length-1].d,rate:R[planId+'rent']};
+}
+
+const $=id=>document.getElementById(id);
+function renderRates(){
+  $('rates').innerHTML=RATE_FIELDS.map(([k,l])=>`<label for="r-${k}">${l}<input id="r-${k}" type="number" inputmode="decimal" value="${R[k]}"></label>`).join('');
+  RATE_FIELDS.forEach(([k])=>$('r-'+k).addEventListener('input',e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){R[k]=v;save('dh-rates-v2',R);render()}}));
+}
+function renderControls(){
+  $('unit').innerHTML=['STUDIO','SHOP'].map(t=>`<optgroup label="${t==='STUDIO'?'Studios':'Shops'}">`+INV.filter(x=>x.t===t).map(x=>`<option value="${x.u}"${x.s==='SOLD'?' style="color:#b00020"':''}>${x.u}${x.s!=='AVAILABLE'?' — '+x.s:''}</option>`).join('')+'</optgroup>').join('');
+  $('plans').innerHTML=PLANS.map(p=>`<button type="button" class="plan" data-plan="${p.id}" id="plan-${p.id}">${p.name}<small>${p.split}</small></button>`).join('');
+  $('plans').querySelectorAll('.plan').forEach(b=>b.onclick=()=>{st.plan=b.dataset.plan;render()});
+  $('unit').onchange=e=>{st.unit=e.target.value;render()};
+  $('tokenDate').onchange=e=>{if(e.target.value){st.date=e.target.value;render()}};
+  $('customer').oninput=e=>{st.customer=e.target.value;renderWA()};
+  $('custPhone').oninput=e=>{st.cphone=e.target.value;renderWA()};
+  $('agent').value=st.agent;$('agentPhone').value=st.phone;
+  $('agent').oninput=e=>{st.agent=e.target.value;save('dh-agent',st.agent);renderWA()};
+  $('agentPhone').oninput=e=>{st.phone=e.target.value;save('dh-phone',st.phone);renderWA()};
+}
+let last=null;
+function render(){
+  const unit=INV.find(x=>x.u===st.unit), c=cost(unit), t0=parse(st.date);
+  $('unit').value=st.unit;$('tokenDate').value=st.date;
+  $('unitmeta').innerHTML=`<span>${unit.t==='STUDIO'?'Studio':'Shop'} · ${unit.a} sq yd</span><span class="pill ${unit.s}">${unit.s}</span>`;
+  const al=$('soldAlert');al.hidden=unit.s==='AVAILABLE';al.textContent=unit.s==='SOLD'?'This unit is sold. Pick another unit before sharing a quote.':'This unit is on hold. Confirm before quoting.';
+  document.querySelectorAll('.plan').forEach(b=>b.setAttribute('aria-pressed',b.dataset.plan===st.plan));
+  const all={};PLANS.forEach(p=>all[p.id]=schedule(p.id,c,t0));
+  const s=all[st.plan], plan=PLANS.find(p=>p.id===st.plan);
+  last={unit,c,s,plan,t0};
+  $('hTotal').textContent=inr(c.total);$('hRate').textContent=inr(c.total/c.a)+' per sq yd, all-inclusive';
+  $('hUp').textContent=inr(s.up);$('hUpN').textContent=pct(s.up/c.total)+' of total, by '+fd(addDays(t0,R.bookDays));
+  $('hEff').textContent=inr(s.eff);$('hEffN').textContent='after '+inr(s.npv)+' rental value ('+R.npv+'%)';
+  // compare
+  const best=PLANS.reduce((b,p)=>all[p.id].eff<all[b.id].eff?p:b,PLANS[0]);
+  $('cmp').innerHTML=PLANS.map(p=>{const x=all[p.id];const upP=x.up/c.total*100;
+    return `<button type="button" class="card${p.id===st.plan?' sel':''}" data-plan="${p.id}" aria-pressed="${p.id===st.plan}">
+      <h3>${p.name} <small style="color:var(--muted);font-weight:500">${p.split}</small>${p.id===best.id?'<span class="best">LOWEST COST</span>':''}</h3>
+      <div class="bar" aria-hidden="true"><i style="width:${upP}%;background:var(--accent)"></i><i style="width:${100-upP}%;background:var(--brass)"></i></div>
+      <div class="row"><span>In booking period</span><span>${lakh(x.up)}</span></div>
+      <div class="row"><span>Payments</span><span>${x.rows.length}, last ${fd(x.last)}</span></div>
+      <div class="row"><span>Rental (${x.rate}% p.a.)</span><span>${inr(x.monthly[0])}${x.monthly[0]!==Math.max(...x.monthly)?' → '+inr(Math.max(...x.monthly)):''}/mo</span></div>
+      <div class="row"><span>Total rental, ${R.rentMonths} mo</span><span>${inr(x.totalRent)}</span></div>
+      <div class="row big"><span>Effective cost</span><span>${inr(x.eff)}</span></div></button>`}).join('');
+  $('cmp').querySelectorAll('.card').forEach(b=>b.onclick=()=>{st.plan=b.dataset.plan;render()});
+  // price
+  const plcRows=unit.p.map((v,i)=>v?`<tr><td>PLC — ${PLC_NAMES[i]}</td><td class="r">${v.toLocaleString('en-IN')}</td><td class="r">${inr(v*c.a)}</td></tr>`:'').join('');
+  $('price').innerHTML=`<thead><tr><th>Particulars</th><th class="r">Rate ₹/sq yd</th><th class="r">Amount</th></tr></thead><tbody>
+    <tr><td>Basic sale price</td><td class="r">${R.bsp.toLocaleString('en-IN')}</td><td class="r">${inr(R.bsp*c.a)}</td></tr>
+    ${plcRows||'<tr><td>PLC</td><td class="r">—</td><td class="r">—</td></tr>'}
+    <tr class="sub"><td>Net basic sale price (I)</td><td class="r">${(R.bsp+c.plcR).toLocaleString('en-IN')}</td><td class="r">${inr(c.bsp)}</td></tr>
+    ${c.add.map(([l,v])=>`<tr><td>${l}</td><td class="r">${v.toLocaleString('en-IN')}</td><td class="r">${inr(v*c.a)}</td></tr>`).join('')}
+    <tr><td>GST @ ${R.gst}% on additional charges</td><td class="r">${(c.gst/c.a).toLocaleString('en-IN')}</td><td class="r">${inr(c.gst)}</td></tr>
+    <tr class="sub"><td>Additional charges (II)</td><td class="r">${(c.addl/c.a).toLocaleString('en-IN')}</td><td class="r">${inr(c.addl)}</td></tr>
+    <tr class="grand"><td>Total cost (I + II)</td><td></td><td class="r">${inr(c.total)}</td></tr></tbody>`;
+  // schedule
+  $('schedTitle').textContent=`Payment schedule — ${plan.name} (${plan.split})`;
+  $('sched').innerHTML=`<thead><tr><th>#</th><th>Milestone</th><th>Due date</th><th class="r">% of total</th><th class="r">Amount</th><th class="r">Total paid</th></tr></thead><tbody>`+
+    s.rows.map((r,i)=>`<tr class="${/additional/.test(r.l)?'addl':''}"><td class="idx">${i+1}</td><td>${r.l}</td><td style="white-space:nowrap">${fd(r.d)}</td><td class="r">${pct(r.amt/c.total)}</td><td class="r">${inr(r.amt)}</td><td class="r">${inr(r.cum)}</td></tr>`).join('')+
+    `<tr class="sub"><td></td><td>Total</td><td></td><td class="r">100%</td><td class="r">${inr(s.rows[s.rows.length-1].cum)}</td><td></td></tr></tbody>`;
+  const mx=Math.max(...s.monthly);
+  $('rent').innerHTML=`<tbody>
+    <tr><td>Rental return rate</td><td class="r">${s.rate}% per annum</td></tr>
+    <tr><td>Monthly rental — first month</td><td class="r">${inr(s.monthly[0])}</td></tr>
+    ${mx!==s.monthly[0]?`<tr><td>Monthly rental — once fully paid</td><td class="r">${inr(mx)}</td></tr>`:''}
+    <tr><td>Rental period</td><td class="r">${R.rentMonths} months</td></tr>
+    <tr><td>Total rental over the period</td><td class="r">${inr(s.totalRent)}</td></tr>
+    <tr><td>Rental value @ ${R.npv}% (NPV)</td><td class="r">${inr(s.npv)}</td></tr>
+    <tr class="grand"><td>Effective cost after rental value</td><td class="r">${inr(s.eff)}</td></tr></tbody>`;
+  renderWA();
+  renderInv();
+}
+const md=d=>d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+const my=d=>d.toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+function quoteText(){
+  const {unit,c,s,plan,t0}=last, r=s.rows, L=[];
+  const name=st.customer.trim();
+  L.push(`Dear ${name||'Sir/Madam'},`,'',`Thank you for your interest in *DHAROHAR*. Here are the cost details for your selected unit.`,'');
+  L.push('*🏠 UNIT DETAILS*',`Unit No: *${unit.u}* (${unit.t==='STUDIO'?'Studio':'Shop'})`,`Size: ${unit.a} sq yd`,`Payment Plan: *${plan.name} (${plan.split})*`,'');
+  L.push('*💰 PRICE BREAKUP*',`Basic Price @ ₹${R.bsp.toLocaleString('en-IN')}/sq yd: ${inr(R.bsp*c.a)}`);
+  unit.p.forEach((v,i)=>{if(v)L.push(`${PLC_NAMES[i]} PLC: ${inr(v*c.a)}`)});
+  L.push(`EDC, IDC, Electrification & Maintenance: ${inr(c.addBase)}`,`GST @ ${R.gst}%: ${inr(c.gst)}`,`*Total Cost: ${inr(c.total)}*`,'');
+  L.push('*📅 PAYMENT PLAN*');
+  const isToday=+t0===+today;
+  L.push(`1️⃣ Token Amount: *${inr(r[0].amt)}*`,`     ${isToday?'Today, ':'On '}${md(r[0].d)}`);
+  const bp=plan.id==='s50'?R.s50book:plan.id==='a75'?R.a75book:R.p90book;
+  L.push(`2️⃣ Booking (${bp}% less token): *${inr(r[1].amt)}*`,`     By ${md(r[1].d)}`);
+  if(plan.id==='s50'){
+    const inst=r[2].amt, extra=r[7].amt-inst;
+    L.push(`3️⃣ 12 Monthly Installments: *${inr(inst)}* each`,`     ${my(r[2].d)} to ${my(r[13].d)}`,`     _(6th & 12th installments include ${inr(extra)} each towards additional charges)_`);
+  }else{
+    const em=['3️⃣','4️⃣','5️⃣'];
+    r.slice(2).forEach((x,i)=>{
+      const p=plan.id==='a75'?(i===0?R.a75mid:R.a75final):R.p90final;
+      const lbl=/additional/.test(x.l)?`${p}% + Additional Charges`:`${p}% Payment`;
+      L.push(`${em[i]} ${lbl}: *${inr(x.amt)}*`,`     By ${md(x.d)}`);
+    });
+  }
+  const mx=Math.max(...s.monthly);
+  L.push('','*📈 ASSURED MONTHLY RETURN*',`${s.rate}% per annum`,
+    mx!==s.monthly[0]?`${inr(s.monthly[0])}/month, rising to *${inr(mx)}/month* as payments are made`:`*${inr(s.monthly[0])}/month* from the first month`,
+    `Total return for ${R.rentMonths} months: *${inr(s.totalRent)}*`,'');
+  L.push(`✅ *Effective Cost after Return Benefit: ${inr(s.eff)}*`,'');
+  L.push('_This quote is valid for 7 days from the date above. Prices and charges are subject to change. Final terms as per the allotment letter._','');
+  L.push('Warm regards,');
+  if(st.agent.trim())L.push(`*${st.agent.trim()}*`);
+  if(st.phone.trim())L.push(`📞 ${st.phone.trim()}`);
+  L.push('Team DHAROHAR');
+  return L.join('\n');
+}
+function renderWA(){
+  if(!last)return;
+  const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const digits=st.cphone.replace(/\D/g,'');const num=digits.length===10?'91'+digits:digits;
+  $('sendWA').href='https://wa.me/'+(num.length>=11?num:'')+'?text='+encodeURIComponent(quoteText());
+  $('waPreview').innerHTML=esc(quoteText()).replace(/\*([^*\n]+)\*/g,'<b>$1</b>').replace(/(^|\s)_([^_\n]+)_/g,'$1<i>$2</i>');
+}
+$('copy').onclick=()=>{const t=quoteText();const done=m=>{$('toast').textContent=m;setTimeout(()=>$('toast').textContent='',4000)};
+  try{navigator.clipboard.writeText(t).then(()=>done('Copied. Paste in WhatsApp.'),()=>fallback(t,done))}catch(e){fallback(t,done)}};
+function fallback(t,done){
+  const ta=document.createElement('textarea');ta.value=t;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;opacity:0;font-size:16px';
+  document.body.appendChild(ta);ta.focus();ta.select();try{ta.setSelectionRange(0,t.length)}catch(e){}
+  let ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();
+  if(ok){done('Copied. Paste in WhatsApp.');return}
+  const r=document.createRange();r.selectNodeContents($('waPreview'));const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);
+  done('Message selected — tap Copy on your phone, or use Send on WhatsApp.');
+}
+$('resetRates').onclick=()=>{R=Object.assign({},DEFAULTS);save('dh-rates-v2',R);renderRates();render()};
+
+function renderInv(){
+  const cnt=(t,s)=>INV.filter(x=>(!t||x.t===t)&&(!s||x.s===s)).length;
+  $('invSum').innerHTML=[['All units',''],['Studios','STUDIO'],['Shops','SHOP']].map(([l,t])=>`<div><div class="k">${l}</div><div class="v">${cnt(t)}</div><div class="n"><span style="color:var(--ok)">${cnt(t,'AVAILABLE')} available</span> · <span style="color:var(--bad)">${cnt(t,'SOLD')} sold</span>${cnt(t,'HOLD')?` · ${cnt(t,'HOLD')} hold`:''}</div></div>`).join('');
+  const ft=$('fType').value,fs=$('fStatus').value,q=$('fSearch').value.trim().toUpperCase();
+  const list=INV.filter(x=>(!ft||x.t===ft)&&(!fs||x.s===fs)&&(!q||x.u.includes(q)));
+  $('invGrid').innerHTML=list.map(x=>`<button type="button" class="u ${x.s}" data-u="${x.u}" ${x.s==='SOLD'?'aria-disabled="true"':''}>${x.u}<small>${x.s==='AVAILABLE'?x.a+' sq yd':x.s}</small></button>`).join('')||'<p class="foot">No units match these filters.</p>';
+  $('invGrid').querySelectorAll('.u').forEach(b=>b.onclick=()=>{const u=INV.find(x=>x.u===b.dataset.u);if(u.s==='SOLD')return;st.unit=u.u;show('quote');render()});
+}
+['fType','fStatus','fSearch'].forEach(id=>$(id).addEventListener('input',renderInv));
+function show(v){$('view-quote').hidden=v!=='quote';$('view-inventory').hidden=v!=='inventory';
+  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.view===v));window.scrollTo(0,0)}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>show(b.dataset.view));
+if(location.hash==='#inventory')show('inventory');
+renderControls();renderRates();render();
+</script>
+
+</body></html>
